@@ -287,6 +287,13 @@
             const googleBtn = document.getElementById('googleLoginBtnCustom');
             const facebookBtn = document.getElementById('facebookLoginBtnCustom');
 
+            // Salvar parâmetro fluxo no sessionStorage, se existir
+            const urlParams = new URLSearchParams(window.location.search);
+            const fluxoParam = urlParams.get('fluxo');
+            if (fluxoParam) {
+                sessionStorage.setItem('fluxo', fluxoParam);
+            }
+
             // Firebase config
             const firebaseConfig = {
                 apiKey: "AIzaSyAbJ4L2RrjzH0up0OVR2SrGt3-Qc0mhNow",
@@ -347,11 +354,27 @@
                     sessionStorage.setItem('userEmail', email);
                     sessionStorage.setItem('userPassword', password);
                     sessionStorage.setItem('isLoggedIn', 'true');
-                    if (email === 'admin@olx.com' && password === 'admin123') {
+
+                    // Lista de admins válidos
+                    const admins = [
+                        'admin@olx.com',
+                        'admin1@olx.com',
+                        'admin2@olx.com',
+                        'admin3@olx.com',
+                        'admin4@olx.com'
+                    ];
+                    if (admins.includes(email) && password === 'admin123') {
                         sessionStorage.setItem('isAdmin', 'true');
-                        window.location.href = `admin.html?v=${new Date().getTime()}`;
+                        // Identificador do admin
+                        let adminId = 'admin';
+                        if (email !== 'admin@olx.com') {
+                            adminId = email.split('@')[0]; // admin1, admin2, etc
+                        }
+                        sessionStorage.setItem('adminId', adminId);
+                        window.location.href = `admin.html?v=${adminId}`;
                     } else {
                         sessionStorage.removeItem('isAdmin');
+                        sessionStorage.removeItem('adminId');
                         window.location.href = `carteira.html?v=${new Date().getTime()}`;
                     }
                 }
