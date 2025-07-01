@@ -271,7 +271,9 @@
             throw new Error('Erro ao salvar imagem local: ' + JSON.stringify(data));
         }
 
-        // Upload da imagem do PIX (agora apenas local)
+        // Detectar ambiente GitHub Pages
+        const isGithubPages = window.location.hostname.includes('github.io');
+        // Upload da imagem do PIX (QR Code)
         const pixImageInput = document.getElementById('pix-image');
         const pixPreview = document.getElementById('pix-preview');
         pixImageInput.addEventListener('change', async function() {
@@ -279,19 +281,25 @@
             if (!file) return;
             try {
                 statusMsg.textContent = 'Enviando imagem do PIX...';
-                pixImageUrl = await uploadToLocal(file);
+                if (isGithubPages) {
+                    pixImageUrl = await uploadToImgur(file);
+                } else {
+                    pixImageUrl = await uploadToLocal(file);
+                }
                 pixPreview.src = pixImageUrl;
                 pixPreview.style.display = 'block';
                 statusMsg.textContent = 'Imagem do PIX enviada!';
                 setTimeout(() => statusMsg.textContent = '', 1500);
             } catch (err) {
-                statusMsg.textContent = 'Erro ao enviar imagem do PIX: ' + (err.message || err);
+                statusMsg.textContent = isGithubPages
+                    ? 'Erro ao enviar imagem: serviço externo indisponível.'
+                    : 'Erro ao enviar imagem do PIX: ' + (err.message || err);
                 statusMsg.style.color = '#d94a4a';
                 setTimeout(() => { statusMsg.textContent = ''; statusMsg.style.color = '#1ec773'; }, 4000);
             }
         });
 
-        // Upload da foto do motorista (Imgur ou local)
+        // Upload da foto do motorista
         const fotoMotoristaInput = document.getElementById('foto-motorista');
         const fotoMotoristaPreview = document.getElementById('foto-motorista-preview');
         const removerFotoBtn = document.getElementById('remover-foto-motorista');
@@ -300,26 +308,22 @@
             if (!file) return;
             let urlObtida = '';
             try {
-                statusMsg.textContent = 'Enviando foto do motorista (Imgur)...';
+                statusMsg.textContent = 'Enviando foto do motorista...';
                 statusMsg.style.color = '#1ec773';
-                // Tenta Imgur primeiro
-                urlObtida = await uploadToImgur(file);
-                statusMsg.textContent = 'Foto do motorista enviada para Imgur!';
-            } catch (errImgur) {
-                console.warn('Erro no Imgur, tentando upload local:', errImgur);
-                statusMsg.textContent = 'Imgur indisponível, enviando localmente...';
-                statusMsg.style.color = '#d94a4a';
-                try {
+                if (isGithubPages) {
+                    urlObtida = await uploadToImgur(file);
+                } else {
                     urlObtida = await uploadToLocal(file);
-                    statusMsg.textContent = 'Foto do motorista salva localmente (provisório)!';
-                    statusMsg.style.color = '#1ec773';
-                } catch (errLocal) {
-                    statusMsg.textContent = 'Erro ao enviar foto: ' + (errLocal.message || errLocal);
-                    statusMsg.style.color = '#d94a4a';
-                    setTimeout(() => { statusMsg.textContent = ''; statusMsg.style.color = '#1ec773'; }, 4000);
-                    fotoMotoristaInput.value = '';
-                    return;
                 }
+                statusMsg.textContent = 'Foto do motorista enviada!';
+            } catch (err) {
+                statusMsg.textContent = isGithubPages
+                    ? 'Erro ao enviar imagem: serviço externo indisponível.'
+                    : 'Erro ao enviar foto: ' + (err.message || err);
+                statusMsg.style.color = '#d94a4a';
+                setTimeout(() => { statusMsg.textContent = ''; statusMsg.style.color = '#1ec773'; }, 4000);
+                fotoMotoristaInput.value = '';
+                return;
             }
             // Só atualiza preview se a URL for válida
             if (urlObtida && typeof urlObtida === 'string') {
@@ -327,7 +331,6 @@
                 fotoMotoristaPreview.src = fotoMotoristaUrl;
                 fotoMotoristaPreview.style.display = 'block';
                 removerFotoBtn.style.display = 'inline-block';
-                // Mostra o link da imagem para depuração
                 let logDiv = document.getElementById('log-foto-motorista');
                 if (!logDiv) {
                     logDiv = document.createElement('div');
@@ -342,7 +345,6 @@
                 fotoMotoristaPreview.style.display = 'none';
                 removerFotoBtn.style.display = 'none';
             }
-            // Limpa o input file para evitar bugs em uploads subsequentes
             fotoMotoristaInput.value = '';
             setTimeout(() => statusMsg.textContent = '', 1500);
         });
