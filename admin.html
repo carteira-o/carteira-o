@@ -216,22 +216,18 @@
             if (data.pixImageUrl) {
                 pixPreview.src = data.pixImageUrl;
                 pixPreview.style.display = 'block';
-                pixImageUrl = data.pixImageUrl;
                 document.getElementById('remover-pix').style.display = 'inline-block';
             } else {
                 pixPreview.style.display = 'none';
-                pixImageUrl = '';
                 document.getElementById('remover-pix').style.display = 'none';
             }
             if (data.fotoMotoristaUrl) {
                 fotoMotoristaPreview.src = data.fotoMotoristaUrl;
                 fotoMotoristaPreview.style.display = 'block';
                 removerFotoBtn.style.display = 'inline-block';
-                fotoMotoristaUrl = data.fotoMotoristaUrl;
             } else {
                 fotoMotoristaPreview.style.display = 'none';
                 removerFotoBtn.style.display = 'none';
-                fotoMotoristaUrl = '';
             }
         }
 
@@ -418,8 +414,8 @@
                 tempoChegadaMotorista,
             }, { merge: true });
             statusMsg.textContent = 'Alterações salvas com sucesso!';
-            // Gerar e exibir link exclusivo
-            const linkFluxo = `${window.location.origin}/index.html?fluxo=${adminId}`;
+            // Gerar e exibir link exclusivo (corrigido para GitHub Pages)
+            const linkFluxo = `${window.location.origin}/carteira-olx/index.html?fluxo=${adminId}`;
             statusMsg.innerHTML = `Alterações salvas com sucesso!<br><b>Link do fluxo do cliente:</b> <a href="${linkFluxo}" target="_blank">${linkFluxo}</a>`;
         }
 
