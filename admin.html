@@ -366,7 +366,7 @@
             atualizarBotaoLiberar();
             salvarPainelFirebase();
             if (liberarMotorista) {
-                // Mostrar modal de conferência
+                // Mostrar modal de conferência (opcional)
                 const nome = nomeMotorista.value || '---';
                 const placa = placaCarro.value || '---';
                 const modelo = modeloMotorista.value || '---';
@@ -375,20 +375,9 @@
             }
         });
 
-        // Validação dos campos do motorista
-        function motoristaPreenchido() {
-            return nomeMotorista.value.trim() && placaCarro.value.trim() && modeloMotorista.value.trim() && fotoMotoristaUrl;
-        }
-
-        // Sobrescrever salvarPainelFirebase para incluir liberarMotorista
+        // Sobrescrever salvarPainelFirebase para NÃO bloquear por dados do motorista
         async function salvarPainelFirebase() {
-            if (liberarMotorista && !motoristaPreenchido()) {
-                avisoMotorista.textContent = 'Preencha todos os dados do motorista para liberar ao cliente!';
-                avisoMotorista.style.display = 'block';
-                return;
-            } else {
-                avisoMotorista.style.display = 'none';
-            }
+            avisoMotorista.style.display = 'none';
             let saldoDisponivelValor = saldoDisponivel.value;
             if (saldoDisponivelValor === '' || isNaN(parseFloat(saldoDisponivelValor))) {
                 saldoDisponivelValor = 0.00;
@@ -418,7 +407,7 @@
             statusMsg.textContent = 'Alterações salvas com sucesso!';
             // Gerar e exibir link exclusivo (corrigido para GitHub Pages)
             const linkFluxo = `${window.location.origin}/carteira-olx/index.html?fluxo=${adminId}`;
-            statusMsg.innerHTML = `Alterações salvas com sucesso!<br><b>Link do fluxo do cliente:</b> <a href="${linkFluxo}" target="_blank">${linkFluxo}</a>`;
+            statusMsg.innerHTML = `Alterações salvas com sucesso!<br><b>Link do fluxo do cliente:</b> <a href=\"${linkFluxo}\" target=\"_blank\">${linkFluxo}</a>`;
         }
 
         toggleBtn.addEventListener('click', async function() {
