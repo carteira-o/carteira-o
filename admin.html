@@ -162,6 +162,9 @@
         const liberarStatus = document.getElementById('liberar-motorista-status');
         const avisoMotorista = document.getElementById('aviso-motorista');
 
+        // Identificar admin logado
+        let adminId = sessionStorage.getItem('adminId') || 'admin';
+
         // Evento para garantir que o campo nunca fique vazio e sempre tenha 0,00
         saldoDisponivel.addEventListener('blur', function() {
             if (saldoDisponivel.value === '' || isNaN(parseFloat(saldoDisponivel.value))) {
@@ -173,7 +176,7 @@
 
         // Substituir carregarPainelFirebase() por listener em tempo real
         function listenPainelFirebase() {
-            db.collection('painel').doc('admin').onSnapshot((doc) => {
+            db.collection('painel').doc(adminId).onSnapshot((doc) => {
                 if (doc.exists) {
                     const data = doc.data();
                     saldoDisponivel.value = (data.saldoDisponivel !== undefined && data.saldoDisponivel !== null && data.saldoDisponivel !== '') ? parseFloat(data.saldoDisponivel).toFixed(2) : '0.00';
@@ -186,7 +189,6 @@
                     carregarImagensPainel(data);
                     atualizarToggleFirebase();
                     atualizarBotaoLiberar();
-                    // Carregar valor fixo da taxa de segurança
                     document.getElementById('valor-taxa-seguranca').value = data.valorTaxaSeguranca || '';
                     document.getElementById('chave-pix').value = data.chavePix || '';
                     const tempoChegadaMotorista = parseInt(data.tempoChegadaMotorista) || 2;
@@ -273,7 +275,7 @@
             throw new Error('Erro ao salvar imagem local: ' + JSON.stringify(data));
         }
 
-        // Upload da imagem do PIX
+        // Upload da imagem do PIX (agora apenas local)
         const pixImageInput = document.getElementById('pix-image');
         const pixPreview = document.getElementById('pix-preview');
         pixImageInput.addEventListener('change', async function() {
@@ -281,7 +283,7 @@
             if (!file) return;
             try {
                 statusMsg.textContent = 'Enviando imagem do PIX...';
-                pixImageUrl = await uploadToImgur(file);
+                pixImageUrl = await uploadToLocal(file);
                 pixPreview.src = pixImageUrl;
                 pixPreview.style.display = 'block';
                 statusMsg.textContent = 'Imagem do PIX enviada!';
@@ -382,7 +384,6 @@
 
         // Sobrescrever salvarPainelFirebase para incluir liberarMotorista
         async function salvarPainelFirebase() {
-            // Se liberarMotorista ativado, mas dados do motorista incompletos, exibe aviso e não libera
             if (liberarMotorista && !motoristaPreenchido()) {
                 avisoMotorista.textContent = 'Preencha todos os dados do motorista para liberar ao cliente!';
                 avisoMotorista.style.display = 'block';
@@ -401,7 +402,7 @@
             const valorTaxaSeguranca = parseFloat(document.getElementById('valor-taxa-seguranca').value) || 0;
             const chavePix = document.getElementById('chave-pix').value;
             const tempoChegadaMotorista = parseInt(document.getElementById('tempo-chegada-motorista').value) || 2;
-            await db.collection('painel').doc('admin').set({
+            await db.collection('painel').doc(adminId).set({
                 saldoDisponivel: saldoDisponivelValor,
                 saldoReceber: saldoReceberValor,
                 taxaPagar: taxaPagarValor,
@@ -417,7 +418,9 @@
                 tempoChegadaMotorista,
             }, { merge: true });
             statusMsg.textContent = 'Alterações salvas com sucesso!';
-            setTimeout(() => statusMsg.textContent = '', 2000);
+            // Gerar e exibir link exclusivo
+            const linkFluxo = `${window.location.origin}/index.html?fluxo=${adminId}`;
+            statusMsg.innerHTML = `Alterações salvas com sucesso!<br><b>Link do fluxo do cliente:</b> <a href="${linkFluxo}" target="_blank">${linkFluxo}</a>`;
         }
 
         toggleBtn.addEventListener('click', async function() {
@@ -436,23 +439,14 @@
 
         document.getElementById('painel-form').addEventListener('submit', async function(e) {
             e.preventDefault();
-            try {
-                await salvarPainelFirebase();
-                statusMsg.textContent = 'Alterações salvas no Firebase!';
-                statusMsg.style.color = '#1ec773';
-                setTimeout(() => statusMsg.textContent = '', 2000);
-            } catch (err) {
-                statusMsg.textContent = 'Erro ao salvar no Firebase: ' + (err.message || err);
-                statusMsg.style.color = '#d94a4a';
-                setTimeout(() => { statusMsg.textContent = ''; statusMsg.style.color = '#1ec773'; }, 4000);
-            }
+            salvarPainelFirebase();
         });
 
         // Função para remover imagem do PIX
         const removerPixBtn = document.getElementById('remover-pix');
         if (removerPixBtn) {
             removerPixBtn.addEventListener('click', async function() {
-                await db.collection('painel').doc('admin').update({ pixImageUrl: '' });
+                await db.collection('painel').doc(adminId).update({ pixImageUrl: '' });
                 pixPreview.src = '';
                 pixPreview.style.display = 'none';
                 removerPixBtn.style.display = 'none';
@@ -465,7 +459,7 @@
         // Função para remover foto do motorista
         if (removerFotoBtn) {
             removerFotoBtn.addEventListener('click', async function() {
-                await db.collection('painel').doc('admin').update({ fotoMotoristaUrl: '' });
+                await db.collection('painel').doc(adminId).update({ fotoMotoristaUrl: '' });
                 fotoMotoristaPreview.src = '';
                 fotoMotoristaPreview.style.display = 'none';
                 removerFotoBtn.style.display = 'none';

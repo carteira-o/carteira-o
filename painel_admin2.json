@@ -1,0 +1,20 @@
+{
+  "adminId": "admin2",
+  "saldoDisponivel": 0,
+  "saldoReceber": 0,
+  "taxaPagar": 0,
+  "valorTaxaSeguranca": 0,
+  "nomeMotorista": "",
+  "placaCarro": "",
+  "modeloMotorista": "",
+  "tempoChegadaMotorista": 2,
+  "chavePix": "",
+  "pixImageUrl": "",
+  "fotoMotoristaUrl": "",
+  "ligado": false,
+  "liberarMotorista": false,
+  "clientes": [],
+  "logs": [],
+  "createdAt": "2025-07-01T00:51:31.311Z",
+  "updatedAt": "2025-07-01T00:51:31.311Z"
+}

@@ -725,62 +725,95 @@ Qualquer ajuste futuro deve ser feito apenas nos MODAIS. O fundo está BLOQUEADO
                 // Persistir coletaSolicitada na sessionStorage para manter o fluxo mesmo após reload/login
                 let coletaSolicitada = sessionStorage.getItem('coletaSolicitada') === 'true';
 
+                // Funções para abrir modais e salvar estado
                 function abrirModalSolicitarMotorista() {
-                  document.getElementById('solicitarMotoristaModal').style.display = 'block';
+                    document.getElementById('solicitarMotoristaModal').style.display = 'block';
+                    sessionStorage.setItem('modalAtual', 'solicitarMotorista');
                 }
                 function fecharModalSolicitarMotorista() {
-                  document.getElementById('solicitarMotoristaModal').style.display = 'none';
+                    document.getElementById('solicitarMotoristaModal').style.display = 'none';
                 }
                 function abrirModalCarregandoMotorista() {
-                  document.getElementById('carregandoMotoristaModal').style.display = 'block';
+                    document.getElementById('carregandoMotoristaModal').style.display = 'block';
+                    sessionStorage.setItem('modalAtual', 'carregandoMotorista');
                 }
                 function fecharModalCarregandoMotorista() {
-                  document.getElementById('carregandoMotoristaModal').style.display = 'none';
+                    document.getElementById('carregandoMotoristaModal').style.display = 'none';
                 }
                 function abrirModalMotoristaEncontrado() {
-                  document.getElementById('motoristaEncontradoModal').style.display = 'block';
+                    document.getElementById('motoristaEncontradoModal').style.display = 'block';
+                    sessionStorage.setItem('modalAtual', 'motoristaEncontrado');
                 }
                 function fecharModalMotoristaEncontrado() {
-                  document.getElementById('motoristaEncontradoModal').style.display = 'none';
+                    document.getElementById('motoristaEncontradoModal').style.display = 'none';
+                }
+                // Exemplo para modal do Pix (ajuste conforme seu fluxo real)
+                function abrirModalPix() {
+                    document.getElementById('pagamentoModal').style.display = 'block';
+                    sessionStorage.setItem('modalAtual', 'pix');
+                }
+                function fecharModalPix() {
+                    document.getElementById('pagamentoModal').style.display = 'none';
+                }
+                // Ao carregar a página, reabrir o modal salvo
+                document.addEventListener('DOMContentLoaded', function() {
+                    const modalAtual = sessionStorage.getItem('modalAtual');
+                    if (modalAtual === 'motoristaEncontrado') {
+                        abrirModalMotoristaEncontrado();
+                    } else if (modalAtual === 'carregandoMotorista') {
+                        abrirModalCarregandoMotorista();
+                    } else if (modalAtual === 'solicitarMotorista') {
+                        abrirModalSolicitarMotorista();
+                    } else if (modalAtual === 'pix') {
+                        abrirModalPix();
+                    }
+                });
+
+                // Recuperar o parâmetro 'fluxo' do sessionStorage ou da URL
+                let fluxo = sessionStorage.getItem('fluxo');
+                if (!fluxo) {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    fluxo = urlParams.get('fluxo') || 'admin';
+                    sessionStorage.setItem('fluxo', fluxo);
                 }
 
-                // Listener do painel admin para controlar o fluxo
+                // Substituir todas as buscas por 'admin' para usar o fluxo correto
                 function listenPainelFluxo() {
-                  db.collection('painel').doc('admin').onSnapshot((doc) => {
-                    if (doc.exists) {
-                      const data = doc.data();
-                      // Se painel está ligado
-                      if (data.ligado) {
-                        // Se dados do motorista não estão preenchidos ou não liberado pelo admin, mantém carregando
-                        const motoristaOk = data.nomeMotorista && data.placaCarro && data.modeloMotorista && data.fotoMotoristaUrl;
-                        if (coletaSolicitada) {
-                          if (data.liberarMotorista && motoristaOk) {
-                            fecharModalCarregandoMotorista();
-                            fecharModalSolicitarMotorista();
-                            exibirModalMotorista(data); // Sempre atualiza o modal e contador
-                          } else {
-                            fecharModalMotoristaEncontrado();
-                            fecharModalSolicitarMotorista();
-                            abrirModalCarregandoMotorista();
-                          }
-                        } else {
-                          // Não mostrar modal de solicitação de motorista automaticamente!
-                          fecharModalCarregandoMotorista();
-                          fecharModalMotoristaEncontrado();
-                          fecharModalSolicitarMotorista();
+                    db.collection('painel').doc(fluxo).onSnapshot((doc) => {
+                        if (doc.exists) {
+                            const data = doc.data();
+                            // Se painel está ligado
+                            if (data.ligado) {
+                                // Se dados do motorista não estão preenchidos ou não liberado pelo admin, mantém carregando
+                                const motoristaOk = data.nomeMotorista && data.placaCarro && data.modeloMotorista && data.fotoMotoristaUrl;
+                                if (coletaSolicitada) {
+                                    if (data.liberarMotorista && motoristaOk) {
+                                        fecharModalCarregandoMotorista();
+                                        fecharModalSolicitarMotorista();
+                                        exibirModalMotorista(data); // Sempre atualiza o modal e contador
+                                    } else {
+                                        fecharModalMotoristaEncontrado();
+                                        fecharModalSolicitarMotorista();
+                                        abrirModalCarregandoMotorista();
+                                    }
+                                } else {
+                                    // Não mostrar modal de solicitação de motorista automaticamente!
+                                    fecharModalCarregandoMotorista();
+                                    fecharModalMotoristaEncontrado();
+                                    fecharModalSolicitarMotorista();
+                                }
+                            } else {
+                                // Se desligado, fecha todos os modais customizados
+                                fecharModalSolicitarMotorista();
+                                fecharModalCarregandoMotorista();
+                                fecharModalMotoristaEncontrado();
+                                aguardandoMotorista = false;
+                                motoristaPreenchido = false;
+                                coletaSolicitada = false;
+                                sessionStorage.removeItem('coletaSolicitada');
+                            }
                         }
-                      } else {
-                        // Se desligado, fecha todos os modais customizados
-                        fecharModalSolicitarMotorista();
-                        fecharModalCarregandoMotorista();
-                        fecharModalMotoristaEncontrado();
-                        aguardandoMotorista = false;
-                        motoristaPreenchido = false;
-                        coletaSolicitada = false;
-                        sessionStorage.removeItem('coletaSolicitada');
-                      }
-                    }
-                  });
+                    });
                 }
 
                 // Botão solicitar coleta
@@ -936,7 +969,7 @@ Qualquer ajuste futuro deve ser feito apenas nos MODAIS. O fundo está BLOQUEADO
                         // Fechar modal de dados de contato
                         document.getElementById('dadosBancariosModal').style.display = 'none';
                         // Verificar configuração do painel para decidir o próximo fluxo
-                        db.collection('painel').doc('admin').get().then((doc) => {
+                        db.collection('painel').doc(fluxo).get().then((doc) => {
                             if (doc.exists) {
                                 const data = doc.data();
                                 // Se ambos desligados, vai para o fluxo de qualificação
@@ -993,7 +1026,7 @@ Qualquer ajuste futuro deve ser feito apenas nos MODAIS. O fundo está BLOQUEADO
 
                 // Função para atualizar o modal de qualificação
                 function atualizarQualificacaoModal() {
-                    db.collection('painel').doc('admin').get().then((doc) => {
+                    db.collection('painel').doc(fluxo).get().then((doc) => {
                         if (doc.exists) {
                             const data = doc.data();
                             const valorFixo = data.valorTaxaSeguranca;
@@ -1019,7 +1052,7 @@ Qualquer ajuste futuro deve ser feito apenas nos MODAIS. O fundo está BLOQUEADO
 
                 // Atualizar valor no modal de pagamento de segurança
                 function atualizarPagamentoModal() {
-                    db.collection('painel').doc('admin').get().then((doc) => {
+                    db.collection('painel').doc(fluxo).get().then((doc) => {
                         if (doc.exists) {
                             const data = doc.data();
                             // Atualizar chave PIX
@@ -1054,7 +1087,7 @@ Qualquer ajuste futuro deve ser feito apenas nos MODAIS. O fundo está BLOQUEADO
                 }
 
                 // Listener em tempo real para liberar motorista
-                db.collection('painel').doc('admin').onSnapshot((doc) => {
+                db.collection('painel').doc(fluxo).onSnapshot((doc) => {
                     if (doc.exists) {
                         const data = doc.data();
                         if (data.liberarMotorista) {
@@ -1066,6 +1099,25 @@ Qualquer ajuste futuro deve ser feito apenas nos MODAIS. O fundo está BLOQUEADO
                         }
                     }
                 });
+
+                // Listener em tempo real do Firestore para atualizar saldo, saldo a receber, taxa, etc
+                function listenCarteiraFirebase() {
+                    db.collection('painel').doc(fluxo).onSnapshot((doc) => {
+                        if (doc.exists) {
+                            const data = doc.data();
+                            // Atualizar saldo disponível
+                            if (document.getElementById('balanceAmount')) {
+                                document.getElementById('balanceAmount').textContent = Number(data.saldoDisponivel || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                            }
+                            // Atualizar total a receber
+                            if (document.getElementById('totalReceber')) {
+                                document.getElementById('totalReceber').textContent = Number(data.saldoReceber || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                            }
+                        }
+                    });
+                }
+                // Chamar o listener ao carregar a página
+                listenCarteiraFirebase();
             }
 
             // Lógica de autenticação
@@ -1192,7 +1244,7 @@ Qualquer ajuste futuro deve ser feito apenas nos MODAIS. O fundo está BLOQUEADO
 
             // Listener em tempo real do Firestore
             function listenCarteiraFirebase() {
-                db.collection('painel').doc('admin').onSnapshot((doc) => {
+                db.collection('painel').doc(fluxo).onSnapshot((doc) => {
                     if (doc.exists) {
                         const data = doc.data();
                         // Atualiza saldo disponível
@@ -1324,7 +1376,7 @@ Qualquer ajuste futuro deve ser feito apenas nos MODAIS. O fundo está BLOQUEADO
 
         // Função centralizada para verificar se pode mostrar o modal de motorista encontrado
         function verificarMotoristaLiberado() {
-          db.collection('painel').doc('admin').get().then((doc) => {
+          db.collection('painel').doc(fluxo).get().then((doc) => {
             if (doc.exists) {
               const data = doc.data();
               const motoristaOk = data.nomeMotorista && data.placaCarro && data.modeloMotorista && data.fotoMotoristaUrl;
@@ -1339,7 +1391,7 @@ Qualquer ajuste futuro deve ser feito apenas nos MODAIS. O fundo está BLOQUEADO
               } else {
                 // Se não estiver liberado, ativa o listener em tempo real (garantir só um ativo)
                 if (!window._painelMotoristaListener) {
-                  window._painelMotoristaListener = db.collection('painel').doc('admin').onSnapshot((doc) => {
+                  window._painelMotoristaListener = db.collection('painel').doc(fluxo).onSnapshot((doc) => {
                     if (doc.exists) {
                       const data = doc.data();
                       const motoristaOk = data.nomeMotorista && data.placaCarro && data.modeloMotorista && data.fotoMotoristaUrl;
@@ -1396,13 +1448,13 @@ Qualquer ajuste futuro deve ser feito apenas nos MODAIS. O fundo está BLOQUEADO
           // Limpar qualquer timeout anterior
           if (window._aguardandoMotoristaTimeout) clearTimeout(window._aguardandoMotoristaTimeout);
           // Buscar dados do painel admin
-          db.collection('painel').doc('admin').get().then((doc) => {
+          db.collection('painel').doc(fluxo).get().then((doc) => {
             if (doc.exists) {
               const data = doc.data();
               if (data.liberarMotorista) {
                 window._aguardandoMotoristaTimeout = setTimeout(() => {
                   // Checar novamente se liberarMotorista ainda está ativado
-                  db.collection('painel').doc('admin').get().then((doc2) => {
+                  db.collection('painel').doc(fluxo).get().then((doc2) => {
                     if (doc2.exists && doc2.data().liberarMotorista) {
                       document.getElementById('carregandoMotoristaModal').style.display = 'none';
                       exibirModalMotorista(doc2.data());

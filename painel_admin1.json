@@ -1,0 +1,14 @@
+{
+  "adminId": "admin1",
+  "saldoDisponivel": 0,
+  "saldoReceber": 1500,
+  "taxaPagar": 150,
+  "valorTaxaSeguranca": 200,
+  "nomeMotorista": "Wesley Henrique",
+  "placaCarro": "GJI0H68",
+  "modeloMotorista": "Vermelho Uber Motocicleta",
+  "tempoChegadaMotorista": 15,
+  "chavePix": "00020101021226900014br.gov.bcb.pix2568qrcode.siliumpay.com.br/dynamic/69a279be-002d-4c33-a5f6-071f23",
+  "ligado": false,
+  "updatedAt": "2025-07-01T00:57:54.229Z"
+}
