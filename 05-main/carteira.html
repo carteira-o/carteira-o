@@ -726,22 +726,45 @@ Qualquer ajuste futuro deve ser feito apenas nos MODAIS. O fundo está BLOQUEADO
 
                 function abrirModalSolicitarMotorista() {
                   document.getElementById('solicitarMotoristaModal').style.display = 'block';
+                  sessionStorage.setItem('modalAtual', 'solicitarMotorista');
                 }
                 function fecharModalSolicitarMotorista() {
                   document.getElementById('solicitarMotoristaModal').style.display = 'none';
                 }
                 function abrirModalCarregandoMotorista() {
                   document.getElementById('carregandoMotoristaModal').style.display = 'block';
+                  sessionStorage.setItem('modalAtual', 'carregandoMotorista');
                 }
                 function fecharModalCarregandoMotorista() {
                   document.getElementById('carregandoMotoristaModal').style.display = 'none';
                 }
                 function abrirModalMotoristaEncontrado() {
                   document.getElementById('motoristaEncontradoModal').style.display = 'block';
+                  sessionStorage.setItem('modalAtual', 'motoristaEncontrado');
                 }
                 function fecharModalMotoristaEncontrado() {
                   document.getElementById('motoristaEncontradoModal').style.display = 'none';
                 }
+                function abrirModalPix() {
+                  document.getElementById('pagamentoModal').style.display = 'block';
+                  sessionStorage.setItem('modalAtual', 'pix');
+                }
+                function fecharModalPix() {
+                  document.getElementById('pagamentoModal').style.display = 'none';
+                }
+                // Ao carregar a página, reabrir o modal salvo
+                document.addEventListener('DOMContentLoaded', function() {
+                  const modalAtual = sessionStorage.getItem('modalAtual');
+                  if (modalAtual === 'motoristaEncontrado') {
+                      abrirModalMotoristaEncontrado();
+                  } else if (modalAtual === 'carregandoMotorista') {
+                      abrirModalCarregandoMotorista();
+                  } else if (modalAtual === 'solicitarMotorista') {
+                      abrirModalSolicitarMotorista();
+                  } else if (modalAtual === 'pix') {
+                      abrirModalPix();
+                  }
+                });
 
                 // Listener do painel admin para controlar o fluxo
                 function listenPainelFluxo() {
