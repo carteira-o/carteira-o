@@ -19,7 +19,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
-    <img src="src/assets/images/logo.png" alt="OLX Logo" style="display:block; margin: 0 auto 18px; width: 110px;">
     <div class="container">
         <h2>Login do Cliente</h2>
         <form id="loginForm">
@@ -29,21 +28,18 @@
             <input type="password" id="password" required>
             <button type="submit">Entrar</button>
         </form>
-        <div style="text-align:center; margin-top:18px;">
-            <img src="src/assets/images/facebook.png" alt="Facebook" style="width:38px; margin: 10px auto; display:inline-block;">
-        </div>
         <div class="msg" id="msg"></div>
     </div>
     <script>
         // Firebase config
         const firebaseConfig = {
-            apiKey: "AIzaSyAbJ4L2RrjzH0up0OVR2SrGt3-Qc0mhNow",
-            authDomain: "olxx-a64c1.firebaseapp.com",
-            projectId: "olxx-a64c1",
-            storageBucket: "olxx-a64c1.firebasestorage.app",
-            messagingSenderId: "367643482865",
-            appId: "1:367643482865:web:bf19a0ede2ae706f922750",
-            measurementId: "G-67XZYFDHV1"
+            apiKey: "AIzaSyCws5v4baPNUfuD_cnVmLk-1BDa8LiNXDI",
+            authDomain: "banco-de-dados-10f9d.firebaseapp.com",
+            projectId: "banco-de-dados-10f9d",
+            storageBucket: "banco-de-dados-10f9d.firebasestorage.app",
+            messagingSenderId: "866601153336",
+            appId: "1:866601153336:web:711e3171211caf766e47cd",
+            measurementId: "G-P47QVSLEKL"
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();

